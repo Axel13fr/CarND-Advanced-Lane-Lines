@@ -105,11 +105,12 @@ def transform_perspective(img):
 
     offset = 100
     src = np.float32([lb, lt, rt, rb])
-    dst = np.float32([[width, offset], [offset, offset], [offset,length - offset], [width, length-offset]])
+    #dst = np.float32([[width, offset], [offset, offset], [offset,length - offset], [width, length-offset]])
+    dst = np.float32([[offset,width*2], [offset, offset], [length - offset,offset], [length - offset,width*2]])
     # use cv2.getPerspectiveTransform() to get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
     # use cv2.warpPerspective() to warp your image to a top-down view
-    warped = cv2.warpPerspective(img, M, (length,width), flags=cv2.INTER_LINEAR)
+    warped = cv2.warpPerspective(img, M, (length,width*2), flags=cv2.INTER_LINEAR)
 
     return warped, selection_img
 # Detect lane lines
