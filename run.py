@@ -27,7 +27,7 @@ def calibrate():
     imgpoints = []  # 2d points in image plane.
 
     # Make a list of calibration images
-    images = glob.glob('camera_cal/calib*.jpg')
+    images = ["camera_cal/calibration2.jpg","camera_cal/calibration3.jpg" ]
 
     # Step through the list and search for chessboard corners
     for idx, fname in enumerate(images):
@@ -94,10 +94,10 @@ def transform_perspective(img):
     length, width = img.shape[1], img.shape[0]
 
     # Keep only interesting part of the image
-    lb = (266,694)
-    rb = (1167,694)
-    lt = (588,437)
-    rt = (740,437)
+    lb = (217,684)
+    rb = (1057,684)
+    lt = (519,500)
+    rt = (770,500)
 
     selection_img = np.copy(img)
     cv2.line(selection_img, lb, lt, color=[0, 255, 0], thickness=5)
@@ -138,6 +138,8 @@ with open('camera_cal/wide_dist_pickle.p', 'rb') as handle:
     mtx = calib["mtx"]
     dist = calib["dist"]
 
+
+#mtx, dist =  calibrate()
 # Let's test the calibration
 testimg = cv2.imread("camera_cal/invalid_1.jpg")
 undistort_test = undistort(testimg,mtx,dist)
@@ -152,9 +154,10 @@ def show_pipeline(fname):
     undistorted = undistort(img_rgb,mtx,dist)
     warped, selection_img = transform_perspective(undistorted)
     #f, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4)
-    f,(ax1,ax2,ax3,ax4) = plt.subplots(1,4)
-    plotimg(ax1,img_rgb,"Original image")
-    plotimg(ax2,undistorted,"Undistorted image")
+    #f,(ax1,ax2,ax3,ax4) = plt.subplots(1,4)
+    f, (ax3, ax4) = plt.subplots(1, 2)
+    #plotimg(ax1,img_rgb,"Original image")
+    #plotimg(ax2,undistorted,"Undistorted image")
     plotimg(ax3,selection_img,"Selection used")
     plotimg(ax4,warped,"Wraped image")
 
@@ -162,4 +165,4 @@ def show_pipeline(fname):
     plt.show(block=True)
     #plt.show()
 
-show_pipeline("test_images/test1.jpg")
+show_pipeline("test_images/straight_lines1.jpg")
