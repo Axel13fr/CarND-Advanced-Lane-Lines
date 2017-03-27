@@ -93,26 +93,38 @@ def apply_thresholds(img_rgb):
 def transform_perspective(img):
     length, width = img.shape[1], img.shape[0]
 
-    # Keep only interesting part of the image
-    lb = (217,684)
-    rb = (1057,684)
-    lt = (519,500)
-    rt = (770,500)
+    # Define shape for perspective transformation
+    lb = (185,width)
+    rb = (1110,width)
+    lt = (580,460)
+    rt = (700,460)
 
     selection_img = np.copy(img)
-    cv2.line(selection_img, lb, lt, color=[0, 255, 0], thickness=5)
-    cv2.line(selection_img, rt, rb, color=[0, 255, 0], thickness=5)
+    drawLinesFromPoints(lb, lt, rt, rb, selection_img)
 
     offset = 100
     src = np.float32([lb, lt, rt, rb])
-    #dst = np.float32([[width, offset], [offset, offset], [offset,length - offset], [width, length-offset]])
-    dst = np.float32([[offset,width*2], [offset, offset], [length - offset,offset], [length - offset,width*2]])
+    d_lb = (offset,width*2)
+    d_rb = (offset, offset)
+    d_lt = (length - offset, offset)
+    d_rt = (length - offset, width*2)
+    dst = np.float32([d_lb, d_rb, d_lt, d_rt])
     # use cv2.getPerspectiveTransform() to get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
     # use cv2.warpPerspective() to warp your image to a top-down view
     warped = cv2.warpPerspective(img, M, (length,width*2), flags=cv2.INTER_LINEAR)
+    drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
 
     return warped, selection_img
+
+
+def drawLinesFromPoints(p1, p2, p3, p4, img):
+    cv2.line(img, p1, p2, color=[0, 255, 0], thickness=5)
+    cv2.line(img, p2, p3, color=[0, 255, 0], thickness=5)
+    cv2.line(img, p3, p4, color=[0, 255, 0], thickness=5)
+    cv2.line(img, p4, p1, color=[0, 255, 0], thickness=5)
+
+
 # Detect lane lines
 def detect_lines():
     return
