@@ -94,10 +94,10 @@ def transform_perspective(img):
     length, width = img.shape[1], img.shape[0]
 
     # Define shape for perspective transformation
-    lb = (185,width)
+    lb = (190,width)
     rb = (1110,width)
-    lt = (580,460)
-    rt = (700,460)
+    lt = (595,450)
+    rt = (685,450)
 
     selection_img = np.copy(img)
     drawLinesFromPoints(lb, lt, rt, rb, selection_img)
