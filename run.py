@@ -94,10 +94,10 @@ def transform_perspective(img):
     length, width = img.shape[1], img.shape[0]
 
     # Define shape for perspective transformation
-    lb = (190,width)
-    rb = (1110,width)
-    lt = (595,450)
-    rt = (685,450)
+    lb = (130,width)
+    rb = (1235,width)
+    lt = (560,465)
+    rt = (725,465)
 
     selection_img = np.copy(img)
     drawLinesFromPoints(lb, lt, rt, rb, selection_img)
@@ -109,9 +109,10 @@ def transform_perspective(img):
     d_lt = (length - offset, offset)
     d_rt = (length - offset, width*2)
     dst = np.float32([d_lb, d_rb, d_lt, d_rt])
-    # use cv2.getPerspectiveTransform() to get M, the transform matrix
+
+    # get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
-    # use cv2.warpPerspective() to warp your image to a top-down view
+    # Perspective transform
     warped = cv2.warpPerspective(img, M, (length,width*2), flags=cv2.INTER_LINEAR)
     drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
 
@@ -158,8 +159,6 @@ undistort_test = undistort(testimg,mtx,dist)
 cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
 #cv2.imshow("Undistorded image", undistort_test)
 
-images = glob.glob('test_images/*.jpg')
-#for idx, fname in enumerate(images):
 def show_pipeline(fname):
     img = cv2.imread(fname)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -177,4 +176,8 @@ def show_pipeline(fname):
     plt.show(block=True)
     #plt.show()
 
-show_pipeline("test_images/straight_lines1.jpg")
+#show_pipeline("test_images/straight_lines1.jpg")
+
+images = glob.glob('test_images/*.jpg')
+for idx, fname in enumerate(images):
+    show_pipeline(fname)
