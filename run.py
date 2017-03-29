@@ -80,7 +80,7 @@ def undistort(img,mtx,dist):
 def apply_thresholds(img_rgb):
     gradx = abs_sobel_thresh(img_rgb, 1,0, thresh=(20, 255))
     grady = abs_sobel_thresh(img_rgb, 0,1, thresh=(20, 255))
-    mag_binary = mag_thresh(img_rgb, sobel_kernel=ksize, mag_thresh=(20, 255))
+    mag_binary = mag_thresh(img_rgb, mag_thresh=(20, 255))
     binary,s_chan = s_channel_threshold(img_rgb)
 
     # Combine all these together:
@@ -164,12 +164,14 @@ def show_pipeline(fname):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
     warped, selection_img = transform_perspective(undistorted)
+    thresholded = apply_thresholds(undistorted)
+    warped, ignr = transform_perspective(thresholded)
     #f, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4)
     #f,(ax1,ax2,ax3,ax4) = plt.subplots(1,4)
-    f, (ax3, ax4) = plt.subplots(1, 2)
-    #plotimg(ax1,img_rgb,"Original image")
-    #plotimg(ax2,undistorted,"Undistorted image")
-    plotimg(ax3,selection_img,"Selection used")
+    f, (ax1,ax2, ax3, ax4) = plt.subplots(1, 4)
+    plotimg(ax1,img_rgb,"Original image")
+    plotimg(ax2,selection_img,"Selection used")
+    plotimg(ax3,thresholded,"Thresholded image")
     plotimg(ax4,warped,"Wraped image")
 
     plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
