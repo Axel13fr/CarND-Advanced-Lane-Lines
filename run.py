@@ -97,23 +97,23 @@ def transform_perspective(img):
     lb = (130,width)
     rb = (1235,width)
     lt = (560,465)
-    rt = (725,465)
+    rt = (730,465)
 
     selection_img = np.copy(img)
     drawLinesFromPoints(lb, lt, rt, rb, selection_img)
 
-    offset = 100
+    offset = 200
     src = np.float32([lb, lt, rt, rb])
-    d_lb = (offset,width*2)
-    d_rb = (offset, offset)
-    d_lt = (length - offset, offset)
-    d_rt = (length - offset, width*2)
+    d_lb = (offset,width)
+    d_rb = (offset, 0)
+    d_lt = (length - offset, 0)
+    d_rt = (length - offset, width)
     dst = np.float32([d_lb, d_rb, d_lt, d_rt])
 
     # get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
     # Perspective transform
-    warped = cv2.warpPerspective(img, M, (length,width*2), flags=cv2.INTER_LINEAR)
+    warped = cv2.warpPerspective(img, M, (length,width), flags=cv2.INTER_LINEAR)
     drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
 
     return warped, selection_img
