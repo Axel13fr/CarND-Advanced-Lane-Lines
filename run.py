@@ -114,13 +114,14 @@ def transform_perspective(img,draw_lines=False):
 
     # get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
+    Minv = cv2.getPerspectiveTransform(dst,src)
     # Perspective transform
     warped = cv2.warpPerspective(img, M, (length,width), flags=cv2.INTER_LINEAR)
 
     if draw_lines:
         drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
 
-    return warped, selection_img
+    return warped, selection_img, Minv
 
 
 def drawLinesFromPoints(p1, p2, p3, p4, img):
@@ -133,13 +134,46 @@ def drawLinesFromPoints(p1, p2, p3, p4, img):
 # Detect lane lines
 def detect_lines(thresh_image):
     left_fit, right_fit, left_curverad, right_curverad = find_lines(thresh_image)
-    return
+    return left_fit, right_fit, left_curverad, right_curverad
 
-def display():
-    return
+# Draw resulting lines back onto the image
+def display(warped,left_fit,right_fit,mtx,undist):
+    # Compute points from lift fits
+    ploty = np.linspace(0, warped.shape[0] - 1, warped.shape[0])
+    left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
+    right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
-def pipeline(img):
-    return
+    # Create an image to draw the lines on
+    warp_zero = np.zeros_like(warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
+
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+    pts = np.hstack((pts_left, pts_right))
+
+    # Draw the lane onto the warped blank image
+    cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
+
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)
+    newwarp = cv2.warpPerspective(color_warp, mtx, (undist.shape[1], undist.shape[0]))
+    # Combine the result with the original image
+    result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+    return result
+
+def pipeline(img_rgb):
+    #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # Undistord image with calibration data
+    undistorted = undistort(img_rgb,mtx,dist)
+    # Threshold and wrap
+    thresholded,l_chan,s_chan = apply_thresholds(undistorted)
+    warped_thresh, ignr,Minv = transform_perspective(thresholded)
+
+    # Find lines and draw result to the image
+    left_fit, right_fit, left_curverad, right_curverad = find_lines(warped_thresh)
+    result = display(warped_thresh, left_fit, right_fit, Minv, undistorted)
+
+    return result
 
 # Plot the result
 def plotimg(ax,img,title=''):
@@ -164,7 +198,9 @@ def show_pipeline(fname):
     img = cv2.imread(fname)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
+    # DISPLAY ONLY
     warped, selection_img = transform_perspective(undistorted,draw_lines=True)
+
     thresholded,l_chan,s_chan = apply_thresholds(undistorted)
     warped_thresh, ignr = transform_perspective(thresholded)
 
@@ -194,9 +230,18 @@ def show_min_pipeline(fname):
     plt.suptitle(fname + "Lft Cur " + str(left_curverad) + " Rght Cur " + str(right_curverad))
     plt.show()
 
+def show_pipeline(fname):
+    img = cv2.imread(fname)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    result = pipeline(img_rgb)
+    plt.imshow(result)
+    plt.title("Pipeline Result")
+    plt.show()
+
 #show_pipeline("test_images/straight_lines1.jpg")
 
 images = glob.glob('test_images/*.jpg')
 for idx, fname in enumerate(images):
     #show_pipeline(fname)
-    show_min_pipeline(fname)
+    #show_min_pipeline(fname)
+    show_pipeline(fname)
