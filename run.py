@@ -92,7 +92,7 @@ def apply_thresholds(img_rgb):
     return final,l_chan,s_chan
 
 # Perspective transform
-def transform_perspective(img):
+def transform_perspective(img,draw_lines=False):
     length, width = img.shape[1], img.shape[0]
 
     # Define shape for perspective transformation
@@ -116,7 +116,9 @@ def transform_perspective(img):
     M = cv2.getPerspectiveTransform(src, dst)
     # Perspective transform
     warped = cv2.warpPerspective(img, M, (length,width), flags=cv2.INTER_LINEAR)
-    drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
+
+    if draw_lines:
+        drawLinesFromPoints(d_lb,d_rb,d_lt,d_rt,warped)
 
     return warped, selection_img
 
@@ -162,7 +164,7 @@ def show_pipeline(fname):
     img = cv2.imread(fname)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
-    warped, selection_img = transform_perspective(undistorted)
+    warped, selection_img = transform_perspective(undistorted,draw_lines=True)
     thresholded,l_chan,s_chan = apply_thresholds(undistorted)
     warped_thresh, ignr = transform_perspective(thresholded)
 
