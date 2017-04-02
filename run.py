@@ -137,7 +137,7 @@ def detect_lines(thresh_image):
     return left_fit, right_fit, left_curverad, right_curverad
 
 # Draw resulting lines back onto the image
-def display(warped,left_fit,right_fit,mtx,undist):
+def draw_result(warped, left_fit, right_fit, mtx, undist):
     # Compute points from lift fits
     ploty = np.linspace(0, warped.shape[0] - 1, warped.shape[0])
     left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
@@ -171,7 +171,7 @@ def pipeline(img_rgb):
 
     # Find lines and draw result to the image
     left_fit, right_fit, left_curverad, right_curverad = find_lines(warped_thresh)
-    result = display(warped_thresh, left_fit, right_fit, Minv, undistorted)
+    result = draw_result(warped_thresh, left_fit, right_fit, Minv, undistorted)
 
     return result
 
@@ -180,19 +180,6 @@ def plotimg(ax,img,title=''):
     ax.imshow(img, cmap='gray')
     ax.set_axis_off()
     ax.set_title(title)
-
-with open('camera_cal/wide_dist_pickle.p', 'rb') as handle:
-    calib = pickle.load(handle)
-    mtx = calib["mtx"]
-    dist = calib["dist"]
-
-
-#mtx, dist =  calibrate()
-# Let's test the calibration
-testimg = cv2.imread("camera_cal/invalid_1.jpg")
-undistort_test = undistort(testimg,mtx,dist)
-cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
-#cv2.imshow("Undistorded image", undistort_test)
 
 def show_pipeline(fname):
     img = cv2.imread(fname)
@@ -238,10 +225,31 @@ def show_pipeline(fname):
     plt.title("Pipeline Result")
     plt.show()
 
-#show_pipeline("test_images/straight_lines1.jpg")
+def run_example_images():
+    images = glob.glob('test_images/*.jpg')
+    for idx, fname in enumerate(images):
+        #show_pipeline(fname)
+        #show_min_pipeline(fname)
+        show_pipeline(fname)
 
-images = glob.glob('test_images/*.jpg')
-for idx, fname in enumerate(images):
-    #show_pipeline(fname)
-    #show_min_pipeline(fname)
-    show_pipeline(fname)
+def run_video():
+    from moviepy.editor import VideoFileClip
+    output = 'project_output.mp4'
+    clip2 = VideoFileClip('project_video.mp4')
+    challenge_clip = clip2.fl_image(pipeline)
+    challenge_clip.write_videofile(output, audio=False)
+
+with open('camera_cal/wide_dist_pickle.p', 'rb') as handle:
+    calib = pickle.load(handle)
+    mtx = calib["mtx"]
+    dist = calib["dist"]
+
+
+#mtx, dist =  calibrate()
+# Let's test the calibration
+testimg = cv2.imread("camera_cal/invalid_1.jpg")
+undistort_test = undistort(testimg,mtx,dist)
+cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
+#cv2.imshow("Undistorded image", undistort_test)
+
+run_video()
