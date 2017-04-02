@@ -4,12 +4,10 @@ import cv2
 # Define a function that applies Sobel x or y,
 # then takes an absolute value and applies a threshold.
 def abs_sobel_thresh(img, orient_x,orient_y, sobel_kernel=3,thresh=(0,255)):
-    # Apply the following steps to img
-    # 1) Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    soble = np.zeros_like(gray)
+    # 1) Assumes the image is one dimension in depth !
+    assert(len(img.shape) == 2)
     # 2) Take the derivative based on orientation vector
-    sobel = cv2.Sobel(gray, cv2.CV_64F, orient_x,orient_y, ksize=sobel_kernel)
+    sobel = cv2.Sobel(img, cv2.CV_64F, orient_x,orient_y, ksize=sobel_kernel)
 
     # 3) Take the absolute value of the derivative or gradient
     soble_abs = np.absolute(sobel)
@@ -66,8 +64,8 @@ def s_channel_threshold(rgb_img,thresh=(180, 255)):
     :param thresh: the thresholds to apply
     :return: the binary image output
     """
-    s_chan = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HLS)[:, :, 2]
+    h_chan, l_chan, s_chan =cv2.split(cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HLS))
     binary = np.zeros_like(s_chan)
     binary[(s_chan > thresh[0]) & (s_chan <= thresh[1])] = 1
-    return binary,s_chan
+    return binary,h_chan,l_chan,s_chan
 

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from thresholding import *
+from line_extraction import *
 import glob
 import pickle
 
@@ -78,16 +79,17 @@ def undistort(img,mtx,dist):
 
 # Color/gradient threshold
 def apply_thresholds(img_rgb):
-    gradx = abs_sobel_thresh(img_rgb, 1,0, thresh=(20, 255))
-    grady = abs_sobel_thresh(img_rgb, 0,1, thresh=(20, 255))
+    gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+    gradx = abs_sobel_thresh(gray, 1,0, thresh=(20, 255))
+    grady = abs_sobel_thresh(gray, 0,1, thresh=(20, 255))
     mag_binary = mag_thresh(img_rgb, mag_thresh=(20, 255))
-    binary,s_chan = s_channel_threshold(img_rgb)
+    binary, h_chan, l_chan, s_chan = s_channel_threshold(img_rgb)
 
     # Combine all these together:
     final = np.zeros_like(mag_binary)
-    final[(binary == 1) | (((gradx == 1) & (grady == 1))  & (mag_binary == 1)) ] = 1
+    final[(binary == 1) | ((gradx == 1) & (mag_binary == 1)) ] = 1
 
-    return final
+    return final,l_chan,s_chan
 
 # Perspective transform
 def transform_perspective(img):
@@ -127,11 +129,8 @@ def drawLinesFromPoints(p1, p2, p3, p4, img):
 
 
 # Detect lane lines
-def detect_lines():
-    return
-
-# Determine the lane curvature
-def find_lane_curvature():
+def detect_lines(thresh_image):
+    left_fit, right_fit, left_curverad, right_curverad = find_lines(thresh_image)
     return
 
 def display():
@@ -164,22 +163,38 @@ def show_pipeline(fname):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
     warped, selection_img = transform_perspective(undistorted)
-    thresholded = apply_thresholds(undistorted)
-    warped, ignr = transform_perspective(thresholded)
-    #f, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2, 4)
-    #f,(ax1,ax2,ax3,ax4) = plt.subplots(1,4)
-    f, (ax1,ax2, ax3, ax4) = plt.subplots(1, 4)
-    plotimg(ax1,img_rgb,"Original image")
-    plotimg(ax2,selection_img,"Selection used")
-    plotimg(ax3,thresholded,"Thresholded image")
-    plotimg(ax4,warped,"Wraped image")
+    thresholded,l_chan,s_chan = apply_thresholds(undistorted)
+    warped_thresh, ignr = transform_perspective(thresholded)
 
-    plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    f, ((ax1,ax2,ax3), (ax4,ax5,ax6)) = plt.subplots(2, 3)
+    plotimg(ax1,selection_img,"Selection used")
+    plotimg(ax2,s_chan, "S Channel")
+    plotimg(ax3,l_chan, "L Channel")
+    plotimg(ax4,warped,"Wrapped RGB image")
+    plotimg(ax5,thresholded,"Thresholded image")
+    plotimg(ax6,warped_thresh,"Wrapped thresh. image")
+
+    plt.suptitle(fname)
     plt.show(block=True)
-    #plt.show()
+
+def show_min_pipeline(fname):
+    img = cv2.imread(fname)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    undistorted = undistort(img_rgb,mtx,dist)
+    thresholded, l_chan, s_chan = apply_thresholds(undistorted)
+    warped_thresh, ignr = transform_perspective(thresholded)
+    f, (ax1,ax2,ax3) = plt.subplots(1,3)
+    plotimg(ax1,img_rgb,"Selection used")
+    plotimg(ax2, warped_thresh, "Wrapped thresh. image")
+
+    left_fit, right_fit,left_curverad, right_curverad = find_lines(warped_thresh,ax3)
+
+    plt.suptitle(fname + "Lft Cur " + str(left_curverad) + " Rght Cur " + str(right_curverad))
+    plt.show()
 
 #show_pipeline("test_images/straight_lines1.jpg")
 
 images = glob.glob('test_images/*.jpg')
 for idx, fname in enumerate(images):
-    show_pipeline(fname)
+    #show_pipeline(fname)
+    show_min_pipeline(fname)
