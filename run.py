@@ -81,7 +81,6 @@ def undistort(img,mtx,dist):
 def apply_thresholds(img_rgb):
     gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
     gradx = abs_sobel_thresh(gray, 1,0, thresh=(20, 255))
-    grady = abs_sobel_thresh(gray, 0,1, thresh=(20, 255))
     mag_binary = mag_thresh(img_rgb, mag_thresh=(20, 255))
     binary, h_chan, l_chan, s_chan = s_channel_threshold(img_rgb)
 
@@ -161,7 +160,7 @@ def draw_result(warped, left_fit, right_fit, mtx, undist):
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
     return result
 
-def pipeline(img_rgb):
+def pipeline(img_rgb,debugView=True):
     #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     # Undistord image with calibration data
     undistorted = undistort(img_rgb,mtx,dist)
@@ -170,10 +169,25 @@ def pipeline(img_rgb):
     warped_thresh, ignr,Minv = transform_perspective(thresholded)
 
     # Find lines and draw result to the image
-    left_fit, right_fit, left_curverad, right_curverad = find_lines(warped_thresh)
+    left_fit, right_fit, left_curverad, right_curverad,res_img = find_lines(warped_thresh)
     result = draw_result(warped_thresh, left_fit, right_fit, Minv, undistorted)
 
-    return result
+    # Write curvature info on image
+    cv2.putText(result, "Left Rad.: " + str(left_curverad) + " Right Rad.: " + str(right_curverad),
+                (200, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3,fontScale=1,color=[0,0,0])
+
+    # Extra debug mode
+    if debugView:
+        cv2.putText(res_img, "Frame Nb: " + str(pipeline.frame_counter),
+                    (400, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3, fontScale=1, color=[255, 255, 255])
+        vis = np.concatenate((res_img, result), axis=1)
+        pipeline.frame_counter += 1
+    else:
+        vis = result
+    return vis
+
+# Ugly static variable...
+pipeline.frame_counter = 0
 
 # Plot the result
 def plotimg(ax,img,title=''):
@@ -186,10 +200,10 @@ def show_pipeline(fname):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
     # DISPLAY ONLY
-    warped, selection_img = transform_perspective(undistorted,draw_lines=True)
+    warped, selection_img,Minv = transform_perspective(undistorted,draw_lines=True)
 
     thresholded,l_chan,s_chan = apply_thresholds(undistorted)
-    warped_thresh, ignr = transform_perspective(thresholded)
+    warped_thresh, ignr,Minv = transform_perspective(thresholded)
 
     f, ((ax1,ax2,ax3), (ax4,ax5,ax6)) = plt.subplots(2, 3)
     plotimg(ax1,selection_img,"Selection used")
@@ -207,7 +221,7 @@ def show_min_pipeline(fname):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
     thresholded, l_chan, s_chan = apply_thresholds(undistorted)
-    warped_thresh, ignr = transform_perspective(thresholded)
+    warped_thresh, ignr,Minv = transform_perspective(thresholded)
     f, (ax1,ax2,ax3) = plt.subplots(1,3)
     plotimg(ax1,img_rgb,"Selection used")
     plotimg(ax2, warped_thresh, "Wrapped thresh. image")
@@ -252,4 +266,5 @@ undistort_test = undistort(testimg,mtx,dist)
 cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
 #cv2.imshow("Undistorded image", undistort_test)
 
-run_video()
+#run_video()
+run_example_images()
