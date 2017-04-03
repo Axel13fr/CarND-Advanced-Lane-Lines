@@ -194,8 +194,8 @@ class Pipeline():
             vis = result
 
         if not self.usePrevLines:
-            self.left_fit = False
-            self.right_fit = True
+            self.left_fit = None
+            self.right_fit = None
         return vis
 
 
