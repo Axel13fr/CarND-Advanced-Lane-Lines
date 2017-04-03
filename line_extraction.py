@@ -17,7 +17,7 @@ def find_lines(binary_warped,axis=None,left_fit=None,right_fit=None):
     left_lane_inds = []
     right_lane_inds = []
 
-    if left_fit is None:
+    if left_fit is None or right_fit is None:
 
         # Take a histogram of the bottom half of the image
         histogram = np.sum(binary_warped[binary_warped.shape[0]/2:,:], axis=0)
@@ -66,6 +66,7 @@ def find_lines(binary_warped,axis=None,left_fit=None,right_fit=None):
         left_lane_inds = np.concatenate(left_lane_inds)
         right_lane_inds = np.concatenate(right_lane_inds)
     else:
+        # reuse previous information
         left_lane_inds = (
         (nonzerox > (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy + left_fit[2] - margin)) & (
         nonzerox < (left_fit[0] * (nonzeroy ** 2) + left_fit[1] * nonzeroy + left_fit[2] + margin)))

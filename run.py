@@ -160,34 +160,44 @@ def draw_result(warped, left_fit, right_fit, mtx, undist):
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
     return result
 
-def pipeline(img_rgb,debugView=True):
-    #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # Undistord image with calibration data
-    undistorted = undistort(img_rgb,mtx,dist)
-    # Threshold and wrap
-    thresholded,l_chan,s_chan = apply_thresholds(undistorted)
-    warped_thresh, ignr,Minv = transform_perspective(thresholded)
+class Pipeline():
+    def __init__(self,debugView=True,usePrevLines=True):
+        self.left_fit = None
+        self.right_fit = None
+        self.frame_nb = 0
+        self.debugView = debugView
+        self.usePrevLines = usePrevLines
 
-    # Find lines and draw result to the image
-    left_fit, right_fit, left_curverad, right_curverad,res_img = find_lines(warped_thresh)
-    result = draw_result(warped_thresh, left_fit, right_fit, Minv, undistorted)
+    def process(self,img_rgb):
+        # Undistort image with calibration data
+        undistorted = undistort(img_rgb,mtx,dist)
+        # Threshold and wrap
+        thresholded,l_chan,s_chan = apply_thresholds(undistorted)
+        warped_thresh, ignr,Minv = transform_perspective(thresholded)
 
-    # Write curvature info on image
-    cv2.putText(result, "Left Rad.: " + str(left_curverad) + " Right Rad.: " + str(right_curverad),
-                (200, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3,fontScale=1,color=[0,0,0])
+        # Find lines and draw result to the image
+        self.left_fit, self.right_fit, l_rad, r_ad,res_img = find_lines(warped_thresh,None,
+                                                                        self.left_fit,self.right_fit)
+        result = draw_result(warped_thresh, self.left_fit, self.right_fit, Minv, undistorted)
 
-    # Extra debug mode
-    if debugView:
-        cv2.putText(res_img, "Frame Nb: " + str(pipeline.frame_counter),
-                    (400, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3, fontScale=1, color=[255, 255, 255])
-        vis = np.concatenate((res_img, result), axis=1)
-        pipeline.frame_counter += 1
-    else:
-        vis = result
-    return vis
+        # Write curvature info on image
+        cv2.putText(result, "Left Rad.: " + str(l_rad) + " Right Rad.: " + str(r_ad),
+                    (200, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3,fontScale=1,color=[0,0,0])
 
-# Ugly static variable...
-pipeline.frame_counter = 0
+        # Extra debug mode
+        if self.debugView:
+            cv2.putText(res_img, "Frame Nb: " + str(self.frame_nb),
+                        (400, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3, fontScale=1, color=[255, 255, 255])
+            vis = np.concatenate((res_img, result), axis=1)
+            self.frame_nb += 1
+        else:
+            vis = result
+
+        if not self.usePrevLines:
+            self.left_fit = False
+            self.right_fit = True
+        return vis
+
 
 # Plot the result
 def plotimg(ax,img,title=''):
@@ -195,7 +205,7 @@ def plotimg(ax,img,title=''):
     ax.set_axis_off()
     ax.set_title(title)
 
-def show_pipeline(fname):
+def show_detailed_pipeline(fname):
     img = cv2.imread(fname)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     undistorted = undistort(img_rgb,mtx,dist)
@@ -234,7 +244,8 @@ def show_min_pipeline(fname):
 def show_pipeline(fname):
     img = cv2.imread(fname)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    result = pipeline(img_rgb)
+    pipeline = Pipeline(debugView=True,usePrevLines=False)
+    result = pipeline.process(img_rgb)
     plt.imshow(result)
     plt.title("Pipeline Result")
     plt.show()
@@ -250,7 +261,9 @@ def run_video():
     from moviepy.editor import VideoFileClip
     output = 'project_output.mp4'
     clip2 = VideoFileClip('project_video.mp4')
-    challenge_clip = clip2.fl_image(pipeline)
+
+    pipeline = Pipeline(debugView=True,usePrevLines=True)
+    challenge_clip = clip2.fl_image(pipeline.process)
     challenge_clip.write_videofile(output, audio=False)
 
 with open('camera_cal/wide_dist_pickle.p', 'rb') as handle:
@@ -266,5 +279,5 @@ undistort_test = undistort(testimg,mtx,dist)
 cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
 #cv2.imshow("Undistorded image", undistort_test)
 
-#run_video()
-run_example_images()
+run_video()
+#run_example_images()
