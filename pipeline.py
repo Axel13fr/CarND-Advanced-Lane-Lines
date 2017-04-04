@@ -1,76 +1,6 @@
-
+from calibration import *
 from thresholding import *
 from line_extraction import *
-import pickle
-
-# Camera calibration
-class Calibration():
-    def __init__(self):
-        self.mtx = None
-        self.dist = None
-    def calibrate(self):
-        """
-        Opens calibration image and find chessboard corners in image
-        :return: calibration matrix & distance
-        """
-
-        # prepare object points
-        nx = 9
-        ny = 6
-
-        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-        objp = np.zeros((nx * ny, 3), np.float32)
-        objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
-
-        # Arrays to store object points and image points from all the images.
-        objpoints = []  # 3d points in real world space
-        imgpoints = []  # 2d points in image plane.
-
-        # Make a list of calibration images
-        images = ["camera_cal/calibration2.jpg","camera_cal/calibration3.jpg" ]
-
-        # Step through the list and search for chessboard corners
-        for idx, fname in enumerate(images):
-            print("Processing file " + fname)
-            img = cv2.imread(fname)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-            # Find the chessboard corners
-            ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
-
-            # If found, add object points, image points
-            if ret == True:
-                objpoints.append(objp)
-                imgpoints.append(corners)
-
-                # Draw and display the corners
-                cv2.drawChessboardCorners(img, (nx, ny), corners, ret)
-                write_name = 'corners_found' + fname.split('/')[-1]
-                cv2.imwrite('camera_cal/' + write_name, img)
-                cv2.imshow(write_name, img)
-                cv2.waitKey(500)
-            else:
-                print("Error: no chessboard corners found for " + fname)
-                assert (False)
-
-        cv2.destroyAllWindows()
-
-        img_size = (img.shape[1], img.shape[0])
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
-
-        dist_pickle = {}
-        dist_pickle["mtx"] = mtx
-        dist_pickle["dist"] = dist
-        pickle.dump( dist_pickle, open( "camera_cal/wide_dist_pickle.p", "wb" ) )
-
-        self.mtx = mtx
-        self.dist = dist
-        return mtx,dist
-    def load(self):
-        with open('camera_cal/wide_dist_pickle.p', 'rb') as handle:
-            calib = pickle.load(handle)
-            self.mtx = calib["mtx"]
-            self.dist = calib["dist"]
 
 
 def undistort(img,calib):
@@ -136,12 +66,6 @@ def drawLinesFromPoints(p1, p2, p3, p4, img):
     cv2.line(img, p3, p4, color=[0, 255, 0], thickness=5)
     cv2.line(img, p4, p1, color=[0, 255, 0], thickness=5)
 
-
-# Detect lane lines
-def detect_lines(thresh_image):
-    left_fit, right_fit, left_curverad, right_curverad = find_lines(thresh_image)
-    return left_fit, right_fit, left_curverad, right_curverad
-
 # Draw resulting lines back onto the image
 def draw_result(warped, left_fit, right_fit, mtx, undist):
     # Compute points from lift fits
@@ -169,8 +93,8 @@ def draw_result(warped, left_fit, right_fit, mtx, undist):
 
 class Pipeline():
     def __init__(self,debugView=True,usePrevLines=True):
-        self.left_fit = None
-        self.right_fit = None
+        self.left_line = Line()
+        self.right_line = Line()
         self.frame_nb = 0
         self.calibration = Calibration()
         self.calibration.load()
@@ -185,12 +109,15 @@ class Pipeline():
         warped_thresh, ignr,Minv = transform_perspective(thresholded)
 
         # Find lines and draw result to the image
-        self.left_fit, self.right_fit, l_rad, r_ad,res_img = find_lines(warped_thresh,None,
-                                                                        self.left_fit,self.right_fit)
-        result = draw_result(warped_thresh, self.left_fit, self.right_fit, Minv, undistorted)
+        self.left_line, self.right_line,res_img,offset_m = find_lines(warped_thresh,
+                                                                        self.left_line,
+                                                                        self.right_line)
+        result = draw_result(warped_thresh, self.left_line.current_fit,
+                             self.right_line.current_fit, Minv, undistorted)
 
         # Write curvature info on image
-        cv2.putText(result, "Left Rad.: " + str(l_rad) + " Right Rad.: " + str(r_ad),
+        avg_curv = (self.left_line.radius_of_curvature + self.right_line.radius_of_curvature)
+        cv2.putText(result, "Curv. Radius: " + str(avg_curv) + " Lane Offset:" + str(offset_m) ,
                     (200, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3,fontScale=1,color=[0,0,0])
 
         # Extra debug mode
@@ -203,6 +130,7 @@ class Pipeline():
             vis = result
 
         if not self.usePrevLines:
-            self.left_fit = None
-            self.right_fit = None
+            self.left_line = None
+            self.right_line = None
+
         return vis
