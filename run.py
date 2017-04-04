@@ -60,11 +60,11 @@ def show_pipeline(fname):
     plt.title("Pipeline Result")
     plt.show()
 
-def run_example_images():
+def run_example_images(calib):
     images = glob.glob('test_images/*.jpg')
     for idx, fname in enumerate(images):
-        #show_pipeline(fname)
-        #show_min_pipeline(fname)
+        #show_pipeline(fname,calib)
+        #show_min_pipeline(fname,calib)
         show_pipeline(fname)
 
 def extract_frames(frames):

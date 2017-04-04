@@ -116,7 +116,7 @@ class Pipeline():
                              self.right_line.current_fit, Minv, undistorted)
 
         # Write curvature info on image
-        avg_curv = (self.left_line.radius_of_curvature + self.right_line.radius_of_curvature)
+        avg_curv = (self.left_line.radius_of_curvature + self.right_line.radius_of_curvature)/2
         cv2.putText(result, "Curv. Radius: " + str(avg_curv) + " Lane Offset:" + str(offset_m) ,
                     (200, 100), cv2.FONT_HERSHEY_SIMPLEX, thickness=3,fontScale=1,color=[0,0,0])
 

@@ -18,7 +18,7 @@ class Line():
 
     def append_curv(self,curv_radius):
         AVG_SIZE = 10
-        np.append(self.radiuses,curv_radius)
+        self.radiuses = np.append(self.radiuses,curv_radius)
         size = self.radiuses.shape[0]
         if size > AVG_SIZE:
             self.radius_of_curvature = np.mean(self.radiuses[-AVG_SIZE:])
