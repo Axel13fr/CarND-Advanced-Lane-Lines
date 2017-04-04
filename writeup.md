@@ -28,10 +28,12 @@ The goals / steps of this project are the following:
 [inacurate]: ./report/inaccurate18.jpg "Innacurate calibration"
 [distorded]: ./report/invalid_1.jpg "Before calibration correction"
 [undistorded]: ./report/undistort_test.jpg "After calibration correction"
+[undistorded2]: ./report/undistort_test2.jpg "After calibration correction"
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
 [thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
 [pipeline]: ./report/pipeline_result.png "pipeline"
-[pipeline2]: ./report/pipeline_result.png "pipeline"
+[pipeline2]: ./report/pipeline_result2.png "pipeline"
+[test2]: ./test_images/test2.jpg "Road Transformed"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -68,8 +70,11 @@ After
 ###Pipeline (single images)
 
 ####1. Provide an example of a distortion-corrected image.
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+To demonstrate this step, I called the undistort function from pipeline.py onto :
+![alt text][test2]
+
+This gives me:
+![alt text][undistorded2]
 
 ####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
@@ -144,7 +149,7 @@ Note that the radius curvature is very sensible to small variations specially wh
 
 I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function. It computes a polygon along the found lines and colors the surface and the lines, then stack it onto the original image. It also generates an image made of a debug view showing the linefit and the projection of the found lines on the road.
 
-![alt text][[pipeline2]]
+![alt text][pipeline2]
 
 ---
 
