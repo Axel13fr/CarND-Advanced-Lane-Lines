@@ -28,7 +28,7 @@ The goals / steps of this project are the following:
 [inacurate]: ./report/inaccurate18.jpg "Innacurate calibration"
 [distorded]: ./report/invalid_1.jpg "Before calibration correction"
 [undistorded]: ./report/undistort_test.jpg "After calibration correction"
-[undistorded2]: ./report/undistort_test2.jpg "After calibration correction"
+[undistorded2]: ./camera_cal/undistort_test2.jpg "After calibration correction"
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
 [thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
 [pipeline]: ./report/pipeline_result.png "pipeline"
