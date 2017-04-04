@@ -30,6 +30,7 @@ The goals / steps of this project are the following:
 [undistorded]: ./report/undistort_test.jpg "After calibration correction"
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
 [thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
+[pipeline]: ./report/pipeline_result.png "thresholding pipeline"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -115,9 +116,16 @@ The complete projection and thresholding pipeline in action:
 
 ####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Using the thresholded warped image, I use the find_lines() function located in `line_extraction.py`.
+It consists of searching for the line starts at the bottom of the image using histogram peaks for the first image. It then searches for pixels in 9 boxes along the height of the image, 100px width each, giving a surface of about 4000pixels each. Each pixel in one of these box is used to fit a second order polynomial. If a box contains more than minpix pixels (500), its position is shifted to the average pixel position.
 
-![alt text][image5]
+Starting from the example algorithm of the lesson, I had to tune the width of the boxes down to avoid picking up false positives aside the line main axis and I had to increase the minpix parameter so to avoid moving the boxes too much due to noise: 500 pixels is about 12% of a box which is not that much as a line section when cleanly detected takes about 50%.
+
+Once I have already found lines, I simply use the previously found lines and search around it to find the updated linem using the same 50px margin.
+
+Lastly, when one of the 2 line is too weak, meaning when it has less than 4300 pixels contributing to its polynomial fit, it is considered not enough to extrapolate it. So in that case and when the other line is strong (more than 4300pixels), I use the correct_fit_intersection() function which basically takes the strong line fit and transpose it to the detected starting point of the weak line. Basically, this ignore the weak line and use the polynomial fit of the strong line, just having it starting at the detected base point of the weak line.
+
+![alt text][pipeline]
 
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
@@ -127,7 +135,7 @@ I did this in lines # through # in my code in `my_other_file.py`
 
 I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
 
-![alt text][image6]
+![alt text][[pipeline]]
 
 ---
 
