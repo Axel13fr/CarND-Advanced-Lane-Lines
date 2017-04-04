@@ -31,7 +31,7 @@ The goals / steps of this project are the following:
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
 [thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
 [pipeline]: ./report/pipeline_result.png "pipeline"
-[pipeline2]: ./report/pipeline_result.png "pipeline"
+[pipeline2]: ./report/pipeline_result2.png "pipeline"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -144,7 +144,7 @@ Note that the radius curvature is very sensible to small variations specially wh
 
 I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function. It computes a polygon along the found lines and colors the surface and the lines, then stack it onto the original image. It also generates an image made of a debug view showing the linefit and the projection of the found lines on the road.
 
-![alt text][[pipeline2]]
+![alt text][pipeline2]
 
 ---
 
