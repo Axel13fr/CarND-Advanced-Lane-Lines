@@ -39,15 +39,15 @@ The goals / steps of this project are the following:
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-###Writeup / README
+### Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
 
 You're reading it!
 
-###Camera Calibration
+### Camera Calibration
 
-####1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+#### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
 The code for this step is contained in the calibration class code located in the file called `calibration.py`.  
 
@@ -67,16 +67,16 @@ Before
 After
 ![undistorded]
 
-###Pipeline (single images)
+### Pipeline (single images)
 
-####1. Provide an example of a distortion-corrected image.
+#### 1. Provide an example of a distortion-corrected image.
 To demonstrate this step, I called the undistort function from pipeline.py onto :
 ![alt text][test2]
 
 This gives me:
 ![alt text][undistorded2]
 
-####2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding functions are in `thresholding.py`). They are used in apply_thresholds() located in  `piepline.py`. 
 My conclusions were the following:
@@ -88,7 +88,7 @@ My conclusions were the following:
 
 For examples in images, see in the section below along with the perspective transform.
 
-####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
 The code for my perspective transform includes a function called `transform_perspective()`, in the file `pipeline.py`.  The `transform_perspective()` function takes as inputs an image (`img`), and defines source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
 - lb = source left bottom, rt = source right top, d_rt = destination right top etc
@@ -120,7 +120,7 @@ The complete projection and thresholding pipeline in action:
 ![pipeline][thresholding]
 ![pipeline][thresholding2]
 
-####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
 Using the thresholded warped image, I use the find_lines() function located in `line_extraction.py`.
 It consists of searching for the line starts at the bottom of the image using histogram peaks for the first image. It then searches for pixels in 9 boxes along the height of the image, 100px width each, giving a surface of about 4000pixels each. Each pixel in one of these box is used to fit a second order polynomial. If a box contains more than minpix pixels (500), its position is shifted to the average pixel position.
@@ -135,7 +135,7 @@ You can see below and example of the confidence indicator I use as the sum of th
 
 ![alt text][pipeline]
 
-####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
 I did this in calc_curvature() method in my code in `line_extraction.py`. It first converts all the picked points to fit a line from pixel coordinates into world coordinate in meters. After that, it fits again a 2nd degree polynomial using the transformed points and calculates the curvature from it for each lines.
 The position of the vehicle with respect to the center is done in the same way:
@@ -145,7 +145,7 @@ The position of the vehicle with respect to the center is done in the same way:
 
 Note that the radius curvature is very sensible to small variations specially when going straight, it is therefore averaged over the last 10 samples for each line and then averaged again using the 2 curvature calculated for each line. Code for this is done in the line class in append_curv() method in `line_extraction.py` function.
 
-####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
 I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function. It computes a polygon along the found lines and colors the surface and the lines, then stack it onto the original image. It also generates an image made of a debug view showing the linefit and the projection of the found lines on the road.
 
@@ -153,17 +153,18 @@ I implemented this step in get_line_fit_image() in my code in `line_extraction.p
 
 ---
 
-###Pipeline (video)
+### Pipeline (video)
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
 Here's a [link to my video result](./project_output.mp4)
+To generate the video again, simply start run.py
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 My approach managed to pass the project video without any average done onto the polynomial fits but this would have been something to do at least over 5 frames to smooth out the output better. 
 If a line is not found at all in my implementation, this is no recovery mecanism implemented such as using the previous fit or if strong enough, using the other line fit as the 2 are parallel, just like I did when correcting the weak lines.
