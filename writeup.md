@@ -29,6 +29,7 @@ The goals / steps of this project are the following:
 [distorded]: ./report/invalid_1.jpg "Before calibration correction"
 [undistorded]: ./report/undistort_test.jpg "After calibration correction"
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
+[thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -83,8 +84,8 @@ For examples in images, see in the section below along with the perspective tran
 ####3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
 The code for my perspective transform includes a function called `transform_perspective()`, in the file `pipeline.py`.  The `transform_perspective()` function takes as inputs an image (`img`), and defines source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-lb = source left bottom, rt = source right top, d_rt = destination right top etc
-offset = 200 and width and length are the dimensions of the image
+- lb = source left bottom, rt = source right top, d_rt = destination right top etc
+- offset = 200 and width and length are the dimensions of the image
 
 ```
     lb = (130,width)
@@ -110,6 +111,7 @@ I verified that my perspective transform was working as expected by drawing the 
 
 The complete projection and thresholding pipeline in action:
 ![pipeline][thresholding]
+![pipeline][thresholding2]
 
 ####4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
