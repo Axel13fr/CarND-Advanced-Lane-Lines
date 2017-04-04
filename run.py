@@ -63,9 +63,9 @@ def show_pipeline(fname):
 def run_example_images(calib):
     images = glob.glob('test_images/*.jpg')
     for idx, fname in enumerate(images):
-        #show_pipeline(fname,calib)
+        show_detailed_pipeline(fname, calib)
         #show_min_pipeline(fname,calib)
-        show_pipeline(fname)
+        #show_pipeline(fname)
 
 def extract_frames(frames):
     import cv2
@@ -100,5 +100,5 @@ cv2.imwrite('camera_cal/undistort_test.jpg', undistort_test)
 #cv2.imshow("Undistorded image", undistort_test)
 
 run_video()
-#run_example_images()
+#run_example_images(calib)
 #extract_frames([604,605,606,607])
