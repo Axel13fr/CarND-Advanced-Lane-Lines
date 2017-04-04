@@ -84,7 +84,7 @@ def extract_frames(frames):
 def run_video():
     from moviepy.editor import VideoFileClip
     output = 'project_output.mp4'
-    clip2 = VideoFileClip('challenge_video.mp4')
+    clip2 = VideoFileClip('project_video.mp4')
 
     pipeline = Pipeline(debugView=True,usePrevLines=True)
     challenge_clip = clip2.fl_image(pipeline.process)

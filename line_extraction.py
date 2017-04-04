@@ -15,8 +15,6 @@ class Line():
         self.radius_of_curvature = None
         # radius history
         self.radiuses = np.array([])
-        # distance in meters of vehicle center from the line
-        self.line_base_pos = None
 
     def append_curv(self,curv_radius):
         AVG_SIZE = 10
