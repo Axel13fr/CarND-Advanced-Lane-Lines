@@ -125,15 +125,23 @@ Once I have already found lines, I simply use the previously found lines and sea
 
 Lastly, when one of the 2 line is too weak, meaning when it has less than 4300 pixels contributing to its polynomial fit, it is considered not enough to extrapolate it. So in that case and when the other line is strong (more than 4300pixels), I use the correct_fit_intersection() function which basically takes the strong line fit and transpose it to the detected starting point of the weak line. Basically, this ignore the weak line and use the polynomial fit of the strong line, just having it starting at the detected base point of the weak line.
 
+You can see below and example of the confidence indicator I use as the sum of the pixels contributing to each lines. The red and blue surface are showing the margin area used to pick pixels to find the line fit.
+
 ![alt text][pipeline]
 
 ####5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+I did this in calc_curvature() method in my code in `line_extraction.py`. It first converts all the picked points to fit a line from pixel coordinates into world coordinate in meters. After that, it fits again a 2nd degree polynomial using the transformed points and calculates the curvature from it for each lines.
+The position of the vehicle with respect to the center is done in the same way:
+- calculate the line start at the bottom of the image (base_x_left_m and base_x_right_m) by converting the image bottom from pixels to meters using the new previously calculated polynomial in world coordinates
+- calculate the center of the line as (base_x_right_m + base_x_left_m) / 2
+- calculate the distance between the center of the line and the center of the image (ie the middle of the image by transforming pixel width into world distance)
+
+Note that the radius curvature is very sensible to small variations specially when going straight, it is therefore averaged over the last 10 samples for each line and then averaged again using the 2 curvature calculated for each line. Code for this is done in the line class in append_curv() method in `line_extraction.py` function.
 
 ####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function.
 
 ![alt text][[pipeline]]
 
