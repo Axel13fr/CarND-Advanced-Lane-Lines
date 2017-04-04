@@ -30,7 +30,8 @@ The goals / steps of this project are the following:
 [undistorded]: ./report/undistort_test.jpg "After calibration correction"
 [thresholding]: ./report/thresholding.jpg "thresholding pipeline"
 [thresholding2]: ./report/thresholding2.jpg "thresholding pipeline"
-[pipeline]: ./report/pipeline_result.png "thresholding pipeline"
+[pipeline]: ./report/pipeline_result.png "pipeline"
+[pipeline2]: ./report/pipeline_result.png "pipeline"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -141,9 +142,9 @@ Note that the radius curvature is very sensible to small variations specially wh
 
 ####6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function.
+I implemented this step in get_line_fit_image() in my code in `line_extraction.py`.  This function is called in the find_lines() function. It computes a polygon along the found lines and colors the surface and the lines, then stack it onto the original image. It also generates an image made of a debug view showing the linefit and the projection of the found lines on the road.
 
-![alt text][[pipeline]]
+![alt text][[pipeline2]]
 
 ---
 
@@ -151,7 +152,7 @@ I implemented this step in get_line_fit_image() in my code in `line_extraction.p
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_output.mp4)
 
 ---
 
@@ -159,5 +160,10 @@ Here's a [link to my video result](./project_video.mp4)
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+My approach managed to pass the project video without any average done onto the polynomial fits but this would have been something to do at least over 5 frames to smooth out the output better. 
+If a line is not found at all in my implementation, this is no recovery mecanism implemented such as using the previous fit or if strong enough, using the other line fit as the 2 are parallel, just like I did when correcting the weak lines.
+In case of a combination of faded lines (low contributing pixels count) and noise due to shade or damaged road for long enough, the average might not be enough to avoid loosing lines.
+Weather is good in california but my approach would fail in case of rain or low lights due to: low gradients / low lightning / reflections on the water which can very much look like lines.
+
+Tracking lines over time seems to be the next improvement to implement along with rejecting outliers based on the difference between found polynomial fit. Another approach can be to discard lines with an unrealistic curvature or high curvature variation based on road standards or even better GPS maps using the type of road with drive on. Only time is missing here :)
 
